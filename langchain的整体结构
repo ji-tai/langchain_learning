@@ -1,0 +1,29 @@
+langchain整体结构
+
+1）langchain-core核心抽象：基础类：BaseModel、BasePrompt、BaseRetriever、BaseTool、BaseMemory…
+                         数据结构：Message、Document、Vector、ToolCall…
+                         LCEL：| 管道、Runnable、RunnablePassthrough 等
+2）langchain主包：各种 Chain：LLMChain、RetrievalQA、ConversationalRetrievalChain…
+                 Agent：create_agent、AgentExecutor、ReAct 逻辑
+                 记忆封装、常用检索封装
+3）langchain-community社区集成包：各种小众 LLM / Embedding
+                                所有向量库（除了单独分包的）
+                                文档加载器（PDF、Markdown、数据库、网页…）
+                                工具（API、数据库、Shell、Python REPL…
+4）langchain-*独立分包：langchain-openai：OpenAI / Azure OpenAI（ChatOpenAI、OpenAI、Embeddings）
+                      langchain-anthropic：Claude 系列
+                      langchain-google-genai：Gemini
+                      langchain-huggingface：HuggingFace 模型（本地 / 远程）
+                      langchain-ollama：本地 Ollama 模型（Llama3、Qwen、Phi…）
+                      langchain-cohere、langchain-mistral、langchain-fireworks…
+5）langgraph:
+
+
+langchain-core中的组件
+    1.prompts：提示词
+    2.output_parsers:输出解析器
+    3.memory：记忆组件
+    4.retriever：检索器基类
+    5.tools：工具类
+    6.agent：智能体基类
+    7.model：模型组件

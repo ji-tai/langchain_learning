@@ -1,0 +1,181 @@
+LangChain:为各种的LLMs实现通用的框架，把LLMs的组件链接到一起
+    >>>Prompts 优化提示词
+    >>>Models  调用各类模型
+    >>>History 管理会话（历史记录）
+    >>>Indexes 管理和分析各类文档
+    >>>Chains  构建功能执行的链条
+    >>>Agent   构建智能体
+1.langchain目前支持三类模型：LLM（大语言模型），Chat Models（聊天模型），Embeddings Models（嵌入模型）
+    >>>LLM：是技术范畴的总称，指基于大量参数的，海量文本训练的Transformer架构的模型，能力是理解和生成自然语言
+    >>>CM：是应用范畴的细分，是专门对对话场景优化的LLM，核心能力是模拟人类对话的轮次交互
+    >>>EM：得到文本向量
+2.常用的组件
+  1）>>>模型(一般导入自社区包或者再特定的其他包)
+        >>>导入类，创建对象
+            >>>语言模型
+                >>>1.from langchain_ollama import OllamaLLM
+                >>>2.from langchain_community.llms.tongyi import Tongyi
+            >>>聊天模型
+                >>>1.from langchain_community.chat_models.tongyi import ChatTongyi
+                     from langchain_core.messages import HumanMessage,AIMessage,SystemMessage
+                >>>2.from langchain_ollama import ChatOllama
+                     from langchain_core.messages import HumanMessage,AIMessage,SystemMessage
+            >>>嵌入模型
+                >>>1.from langchain_ollama import OllamaEmbeddings
+                >>>2. from langchain_community.embeddings import DashScopeEmbeddings
+        >>>读取方法
+            >>>初始化模型
+                >>>语言模型
+                    >>>model = OllamaLLM(model = "deepseek-r1")
+                    >>>model = Tongyi(model = "qwen-max")
+                >>>聊天模型
+                    >>>chat_model = ChatOllama(model = "deepseek-r1")
+                    >>>chat_model = ChatTongyi(model = "qwen3-max")
+                >>>嵌入模型
+                    >>>embeddings_model = OllamaEmbeddings(model = "qwen3-embedding:4b")
+                    >>>embeddings_model = DashScopeEmbeddings(model = "qwen3-embedding:4b")
+            >>>应用与输出
+                >>>语言模型（语言模型需要传入字符串作为输入）
+                    >>>res = model.invoke(input = "你是谁")
+                       print(res.content)（一次性输出）
+                    >>>for chunk in chat_model.stream(input = message):
+                           print(chunk.content,end = "",flush = True)（流式输出）
+                >>>聊天模型（一般来说：在聊天模型中需要构建Message，需要导入（from langchain_core.messages import HumanMessage,AIMessage,SystemMessage）这些东西）
+                    >>>构建消息
+                        >>>message = [
+                                        SystemMessage(content="你现在一位中国古代的婉约派词人"),
+                                        HumanMessage(content="请你写一首关于闺怨的词"),
+                                        AIMessage(content="梳洗罢，独倚望江楼。过尽千帆皆不是，斜晖脉脉水悠悠。肠断白苹洲。"),
+                                        HumanMessage(content="请你点评一下这首诗词")
+                                      ]（消息列表中有四个消息对象）
+                    >>>输出
+                        >>>res = chat_model.invoke(input=Message)
+                           print(res.content)
+                        >>>for chunk in chat_model.stream(input = message):
+                               print(chunk.content,end = "",flush = True)
+                >>>嵌入模型：嵌入模型是将汉字转化为特定的向量组
+                    >>>print(embeddings_model.embed_query("我喜欢你"))（query是查询的意思）
+                       print(embeddings_model.embed_documents(["我喜欢你","我稀饭你","我爱吃饭","你喜欢我"]))
+  2）>>>模板（模板都是langchain_core.prompts中的类）
+        >>>导入包
+            >>>from langchain_core.prompts import *
+        >>>模板分类
+            >>>通用模板（本质是字符串模板，包含着string）
+                >>>prompt_template = PromptTemplate.from_template(
+                                     "我是一个超级英雄，我的名字是{name}，刚才在{place}，请猜一猜我在干什么"
+                                    )#这里是调用了一个from_template的类方法（静态函数）
+                   prompt_template = PromptTemplate(
+                                        # 模板字符串
+                                        template="我是一个超级英雄，我的名字是{name}，刚才在{place}，请猜一猜我在干什么",
+                                        # 必须声明模板里有哪些变量（这是构造函数强制要求的）
+                                        input_variables=["name", "place"]
+                                        )
+            >>>chat提示词模板（本质是一个消息列表模板，包着 messages 列表）
+                >>>prompt_template=ChatPromptTemplate.from_messages(
+                    [
+                        ("system","你现在是一位唐朝的婉约派诗人"),
+                        MessagesPlaceholder("history"),#占位符可以导入外部的历史会话消息
+                        ("human","好诗，请再为我写一首闺怨词")
+                    ]
+                    )#这是一种简写模式
+                    history_data = [
+                        ("human","请写一首闺怨诗"),
+                        ("ai","梳洗罢，独倚望江楼。过尽千帆皆不是，斜晖脉脉水悠悠。肠断白苹洲。")
+                    ]#消息数据类型
+                    chat_text=prompt_template.invoke({"history":history_data})
+            >>>flewshort提示词模板（本质是一个字符串模板，包含着string）
+                >>>prompt_template=PromptTemplate.from_template("单词：{word},反义词：{antonym}")#通用提示词模板
+                                        example_data=[
+                                        {"word":"大","antonym":"小"},
+                                        {"word":"上","antonym":"下"}#字典
+                                   ]  #列表
+                   flewshort_prompt_template = FewShotPromptTemplate(
+                                                    examples=example_data,#示例数据模板  （是一个列表可以实现遍历）
+                                                    example_prompt=prompt_template,#示例数据模板
+                                                    prefix="给出给定词的反义词，有如下示例：",#示例的前缀提示词
+                                                    suffix="基于示例告诉我：{input_word}的反义词是什么？",#示例的后缀提示词
+                                                    input_variables=['input_word']#对suffix注入变量数据
+                                                )
+        >>>模板定义时的输入
+            >>>PromptTemplate.from_template()
+                >>>参数：template:str（带{变量}的字符串）
+                        input_variables: List[strs]（所有的{变量}的字符串）
+            >>>ChatPromptTemplate.from_messages()#.from_message()是python中的类方法，相当于c++中的静态方法
+                >>>参数：messages:List
+                        input_variables: List[strs]（所有的{变量}的字符串）
+                >>>MessagesPlaceholder（消息占位符：在ChatPromptTemplate中动态插入历史消息）
+                    >>>参数：variable_name: str
+                            optional: bool（默认 False,False必须传入参数,否则可以不传入历史消息）
+
+            >>>FewShotPromptTemplate()
+                >>>参数：examples:List[dict]（示例列表）
+                        example_prompt:PromptTemplate（示例的格式化模板）
+                        prefix:str（前缀说明）
+                        suffix:str（后缀说明）
+                        input_variables: List[str]（一般是对suffix和prefix注入变量数据）
+        >>>模板调用时的输入
+            >>>invoke（接收字典类型）
+                >>>PromptTemplate.invoke({"变量1":"要替换的内容","变量2":"要替换的内容"})
+            >>>formate（接受字典类型）（有两种写法）
+                >>>PromptTemplate.invoke({"变量1":"要替换的内容","变量2":"要替换的内容"})
+  3）>>>历史记忆组件
+        >>>RunnableWithMessageHistory（获得一个拥有历史记录功能的chain）
+            >>>参数：some_chain,        # 被附加历史消息的Runnable, 通常是chain
+                    None,              # 获取指定会话ID的历史会话的函数
+                    input_messages_key="input",  # 声明用户输入消息在模板中的占位符
+                    history_messages_key="chat_history"  # 声明历史消息在模板中的占位符
+        >>>InMemoryChatMessageHistory（为历史记录提供存储记录）
+            >>>
+    >>>解析器
+        >>>strparser=StrOutputParser()#字符串解析器
+        >>>jsonparser=JsonOutputParser()#JSON解析器
+    >>>链（langchain中通常用链来构建一个执行流程,能够入链的组件必须是runnable的子类）
+        >>>chain = prompt | model#chain 是RunnableSequence（RunnableSerializable子类（runnable子类））类的变量
+3.所有 LangChain 的提示词模板（PromptTemplate / ChatPromptTemplate 等），都可以直接用 | 连进链里，所有模板调用 .invoke(input_dict) 都会输出一个 PromptValue，所有 LLM / ChatModel 都能自动接收 PromptValue
+4.langchain中的类的关系
+    >>>(1)顶级抽象基类
+        >>>Runnable(所有可入链类的父类)：强制要求4组核心的方法
+            >>>invoke(input) → 同步单输入执行
+            >>>ainvoke(input) → 异步单输入执行
+            >>>batch(inputs) → 批量执行
+            >>>stream(input) → 流式（逐块）输出
+        >>>BaseLanguageModel(所有模型的父类（继承自Runnable）)
+        >>>BasePromptTemplate（所有提示词模板的父类（继承自父类））
+    >>>(2)核心继承树
+        Serializable
+        └── Runnable
+             ├── 模型类（LLM/ChatModel）
+             ├── 提示词模板（PromptTemplate）
+             ├── 工具（BaseTool）
+             ├── 链（Chain）
+             ├── 解析器（Parser）
+             └── 检索器（Retriever）
+5.各个类需要的输入输出数据类型
+    >>>LLM
+        输入：str
+        输出：str
+    >>>ChatModel
+        输入：list[BaseMessage]
+        输出：AIMessage
+    >>>PromptTemplate / ChatPromptTemplate
+        输入：dict
+        输出：PromptValue
+    >>>RunnableLambda
+        输入：AIMessage
+        输出：自定义
+    >>>StrOutputParser
+        输入：AIMessage
+        输出：字符串
+    >>>JsonOutputParser
+        输入：AIMessage（回答是JSON形式）
+        输出：字符串
+6.常见的的方法
+    >>>format()格式化与拼接，专门用于langchain中的模板类组件（from langchain_core.prompts import *）
+        使用：key = "要替换的文字"
+    >>>invoke()组件的执行运行，对所有的langchain组件都适用是基类runnable的公共方法
+        参数：input
+            1.模型：字符串或者消息列表
+            2.提示词模板：字典
+            3.链：字典
+            4.代理：字典
+
