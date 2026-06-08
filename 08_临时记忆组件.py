@@ -21,15 +21,16 @@ str_patsers = StrOutputParser()
 def print_prompt(prompt):
     print("="*10,prompt.to_string(),"="*10)
     return prompt
-print_prompt2 = RunnableLambda(print_prompt)
+print_prompt2 = RunnableLambda(print_prompt)#将普通函数改为可以入链的函数
 
 base_chain = ptompt | print_prompt2 | model  | str_patsers
 
-history_store = {}
+history_store = {}#创建历史会话记录的链表
 def get_history(session_id):
     if session_id not in history_store:
         history_store[session_id] = InMemoryChatMessageHistory()
     return history_store[session_id]
+#该函数的作用是通过session_id获取对应的历史记录
 
 
 
