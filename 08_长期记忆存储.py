@@ -54,7 +54,7 @@ from langchain_ollama import OllamaLLM
 #
 # def clear(self) -> None:
 #     """清空当前会话所有历史"""
-class FillChatMessageHistory(BaseChatMessageHistory):
+class FillChatMessageHistory(BaseChatMessageHistory):#InMemoryChatMessageHistory这个类的基类也是BaseChatMessageHistory
     def __init__(self, session_id: str,storage_path: str):
         self.session_id = session_id    #获取会话ID
         self.storage_pah = storage_path  #存储历史记录的文件夹地址
@@ -71,7 +71,7 @@ class FillChatMessageHistory(BaseChatMessageHistory):
     def messages(self) -> Sequence[BaseMessage]:
         try:
             with open(self.file_path, "r", encoding="utf-8") as f:
-                messages = json.load(f)
+                messages = json.load(f)#将字典格式的数据解析为json格式
                 return messages_from_dict(messages)
         except FileNotFoundError:
             return []
