@@ -1,7 +1,7 @@
 from langchain_community.document_loaders import CSVLoader
 
 csvloader = CSVLoader(
-    file_path="./data/student.csv",
+    file_path="data/csv/student.csv",
     csv_args={
         "delimiter": ",",#指定分隔符
         "quotechar": '"',#指定引用符
