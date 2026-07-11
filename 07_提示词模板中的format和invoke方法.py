@@ -1,5 +1,5 @@
 #PromptTemplate,FewShotPromptTemplate,ChatProomptTemplate都拥有format和invoke这两类方法
-#format，纯字符串替换，解析占位符，生成提示词，返回值是字符串
+#format，返回字符串类的对象纯字符串替换，解析占位符，生成提示词，返回值是字符串
 #invoke，返回promptvalue类对象，支持解析{}占位符和MessagesPlaceholder结构化占位符需要加上一个.to_string()
 from langchain_core.prompts import *
 
