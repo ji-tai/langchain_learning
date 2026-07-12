@@ -5,7 +5,7 @@ from langchain_core.output_parsers import *
 from langchain_core.runnables.history import RunnableWithMessageHistory
 from langchain_core.chat_history import InMemoryChatMessageHistory
 
-model = OllamaLLM(model = "qwen3.5")
+model = OllamaLLM(model = "qwen3.5")#初始化模型
 # ptompt = PromptTemplate.from_template(
 #     "请根据历史记录回答问题,历史记录是{history},用户提问{input},请回答"
 # )
@@ -15,23 +15,22 @@ ptompt = ChatPromptTemplate(
         MessagesPlaceholder("history"),
         ("human","{input}")
     ]
-)
-str_patsers = StrOutputParser()
+)#初始化提示词
+str_patsers = StrOutputParser()#初始化字符串转换器
 
 #打印提示词的函数
 def print_prompt(prompt):
     print("="*10,prompt.to_string(),"="*10)
     return prompt
-
 print_prompt2 = RunnableLambda(print_prompt)#将普通函数改为可以入链的函数
 
-base_chain = ptompt | print_prompt2 | model  | str_patsers
+base_chain = ptompt | print_prompt2 | model  | str_patsers#初始的链
 
-history_store = {}#创建历史会话记录的字典
+history_store = {}#创建历史会话记录的字典，存储空间
 def get_history(session_id):
     if session_id not in history_store:
         history_store[session_id] = InMemoryChatMessageHistory()
-    return history_store[session_id]
+    return history_store[session_id]#返回的是一个InMemoryChatMessageHistory的类对象
 #该函数的作用是通过session_id获取对应的历史记录
 
 
@@ -44,7 +43,7 @@ new_chain = RunnableWithMessageHistory(
     history_messages_key="history"
 )
 
-if __name__ == '__main__':
+if __name__ == '__main__':#如果该文件是主程序则运行接下来的代码
     # 添加配置,添加langchain的配置
     session_config = {
         "configurable":{

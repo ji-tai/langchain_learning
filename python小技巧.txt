@@ -1,0 +1,7 @@
+    1.if __name__ == '__main__':#这一行代码是进行检测该文件是否为主程序文件，如果是主程序则会执行以下的代码
+    2.if session_id not in history_store:
+          history_store[session_id] = InMemoryChatMessageHistory()
+        列表（List）：if item not in my_list:（检查元素是否存在）
+        集合（Set）：if item not in my_set:（检查元素是否存在，集合查询速度最快）
+        元组（Tuple）：if item not in my_tuple:
+        字符串（String）：if "abc" not in my_string:（检查子串）
